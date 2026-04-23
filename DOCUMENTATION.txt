@@ -1,12 +1,9 @@
 =============================================
   AnonBoard — Anonymous Storyboard Frontend
-  Mid Lab Assessment Documentation
+
+  Just trying to be professional eh XD
 =============================================
 
-DEVELOPER
----------
-Name: [Your Name]
-ID:   [Your Student ID]
 
 ---------------------------------------------
 
@@ -139,13 +136,13 @@ ASSUMPTIONS
 -----------
 
 1. Username uniqueness is validated on the frontend only
-   (backend must enforce this with a unique DB constraint).
+   
 
 2. Votes are not de-duplicated per user in this mock —
-   backend should implement vote tracking per user/IP.
+   backend should implement vote tracking per user... might get scrapped latter on lol 😅😅
 
 3. Passwords are stored in plain text in mockData.js for
-   demo purposes only. Backend must hash with bcrypt/argon2.
+   demo purposes only. Backend must hash.
 
 4. No localStorage is used for any core functionality.
    Auth state lives in React Context (in-memory only).
@@ -154,7 +151,6 @@ ASSUMPTIONS
 
 5. Images and file uploads are not implemented.
 
-6. The app is designed mobile-first with a responsive layout.
-   The sidebar is hidden on screens below 900px.
+
 
 ---------------------------------------------
