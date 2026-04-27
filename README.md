@@ -169,14 +169,17 @@ POST   /api/auth/register
 1. **usernames are unique** — frontend checks but backend should too (not our problem yet)
 
 2. **votes aren't tracked per user** — so people can vote multiple times lmao  
+
    > [!WARNING]  
    > backend should fix this... maybe... if we care enough 😅
 
 3. **passwords are plain text in mockData.js**  
+
    > [!CAUTION]  
    > for demo only!!! real backend MUST hash passwords or ur getting hacked
 
 4. **no localStorage for auth** — auth lives in react context only (in memory)  
+
    > [!NOTE]  
    so if u refresh the page, ur logged out. not a bug, it's a feature ™️
 
