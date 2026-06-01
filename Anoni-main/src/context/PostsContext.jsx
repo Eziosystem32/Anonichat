@@ -21,14 +21,14 @@ export const PostsProvider = ({ children }) => {
   const handleVote = async (postId, direction) => {
     const newVotes = await votePost(postId, direction);
     setPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, votes: newVotes } : p))
+      prev.map((p) => (p._id === postId ? { ...p, votes: newVotes } : p))
     );
   };
 
   const getSortedPosts = () => {
     const copy = [...posts];
     if (sortBy === "newest") {
-      return copy.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      return copy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));;
     }
     return copy.sort((a, b) => b.votes - a.votes);
   };

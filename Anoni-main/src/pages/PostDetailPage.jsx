@@ -45,7 +45,7 @@ export default function PostDetailPage() {
 
   const handlePostVote = async (dir) => {
     if (!post) return;
-    const newVotes = await handleVote(post.id, dir);
+    const newVotes = await handleVote(post._id, dir);
     setPost((prev) => ({ ...prev, votes: prev.votes + (dir === "up" ? 1 : -1) }));
   };
 
@@ -77,7 +77,7 @@ export default function PostDetailPage() {
         <div className="comments-section">
           <h3 className="comments-heading">COMMENTS ({post.comments.length})</h3>
           {post.comments.map((c) => (
-            <CommentItem key={c.id} comment={c} postId={post.id} />
+            <CommentItem key={c.id} comment={c} postId={post._id} />
           ))}
         </div>
 

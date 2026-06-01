@@ -31,7 +31,7 @@ export default function CreatePostPage() {
         username: username.trim() || "anon",
       });
       await fetchPosts();
-      navigate(`/post/${post.id}`);
+      navigate(`/post/${post._id}`);
     } catch (e) {
       setError(e.message);
     } finally {

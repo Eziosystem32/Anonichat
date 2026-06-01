@@ -1,0 +1,19 @@
+{
+  "name": "anonichat-backend",
+  "version": "1.0.0",
+  "description": "AnonBoard Express/Mongo backend",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.19.2",
+    "mongoose": "^8.24.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
+}

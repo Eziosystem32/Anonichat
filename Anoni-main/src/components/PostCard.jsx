@@ -6,7 +6,7 @@ export default function PostCard({ post }) {
   const navigate = useNavigate();
   const { handleVote } = usePosts();
 
-  const handleClick = () => navigate(`/post/${post.id}`);
+  const handleClick = () => navigate(`/post/${post._id}`);
 
   return (
     <div className="post-card">
@@ -22,14 +22,14 @@ export default function PostCard({ post }) {
       <div className="post-card-footer">
         <button
           className="vote-btn up"
-          onClick={(e) => { e.stopPropagation(); handleVote(post.id, "up"); }}
+          onClick={(e) => { e.stopPropagation(); handleVote(post._id, "up"); }}
         >
           ▲
         </button>
         <span className="vote-count"> {post.votes} </span>
         <button
           className="vote-btn down"
-          onClick={(e) => { e.stopPropagation(); handleVote(post.id, "down"); }}
+          onClick={(e) => { e.stopPropagation(); handleVote(post._id, "down"); }}
         >
           ▼
         </button>
