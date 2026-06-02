@@ -9,31 +9,25 @@ const {
   deletePost,
 } = require('../controllers/postController');
 
-// ─── Yassir: drop your authMiddleware import here ──────────────
-// const { protect } = require('../middleware/authMiddleware');
-// Once it exists, swap the placeholder below for `protect`
-// ──────────────────────────────────────────────────────────────────
+const { addComment, deleteComment, voteComment } = require('../controllers/commentController');
 
-// Temporary no-op so routes work locally before auth is wired up.
-// DELETE this block once Yassir's middleware is merged.
 const protect = (req, _res, next) => {
-  // TODO: remove this stub and import Yassir's real middleware
+ // import Yassir's real middleware
   next();
 };
 
 // ─── Public routes ────────────────────────────────────────────────
-router.get('/',    getAllPosts);   // GET  /api/posts
-router.get('/:id', getPostById);  // GET  /api/posts/:id
+router.get('/',    getAllPosts);
+router.get('/:id', getPostById);
 
-// ─── Protected routes (require auth) ──────────────────────────────
-router.post(  '/',    protect, createPost);  // POST   /api/posts
-router.put(   '/:id', protect, updatePost);  // PUT    /api/posts/:id
-router.delete('/:id', protect, deletePost);  // DELETE /api/posts/:id
+// ─── Protected post routes ────────────────────────────────────────
+router.post(  '/',    protect, createPost);
+router.put(   '/:id', protect, updatePost);
+router.delete('/:id', protect, deletePost);
 
-// ─── Eyos: mount your comment router here ─────────────────────
-// Example (once your file exists):
-// const commentRouter = require('./comments');
-// router.use('/:postId/comments', commentRouter);
-// ──────────────────────────────────────────────────────────────────
+// ─── Comment routes ───────────────────────────────────────────────
+router.post(  '/:postId/comments',                protect, addComment);
+router.delete('/:postId/comments/:commentId',     protect, deleteComment);
+router.put(   '/:postId/comments/:commentId/vote',         voteComment);
 
 module.exports = router;
