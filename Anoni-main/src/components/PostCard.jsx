@@ -34,7 +34,7 @@ export default function PostCard({ post }) {
           ▼
         </button>
         <span className="footer-sep"> | </span>
-        <span className="comment-count">💬 {post.comments.length}</span>
+        <span className="comment-count">💬 {post.comments?.length ?? 0}</span>
         <span className="footer-sep"> | </span>
         <button className="action-btn" onClick={handleClick}>Reply</button>
         <span className="footer-sep"> | </span>

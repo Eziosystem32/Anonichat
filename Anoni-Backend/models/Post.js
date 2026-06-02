@@ -47,7 +47,19 @@ const PostSchema = new mongoose.Schema(
       trim: true,
       maxlength: [10000, 'Content cannot exceed 10,000 characters'],
     },
+
+    // display name — can be anything, fake or real, anonymous posting
     username: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    // real owner — used for edit/delete auth
+    // stored as username for now (mock auth)
+    // Yassir: swap this to { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    // when real auth is ready
+    ownerId: {
       type: String,
       required: true,
       trim: true,
@@ -76,7 +88,8 @@ const PostSchema = new mongoose.Schema(
   }
 );
 
-// Index for paginated feed (newest first)
+// Indexes
 PostSchema.index({ createdAt: -1 });
+PostSchema.index({ ownerId: 1 }); // for GET /api/posts?owner=username
 
 module.exports = mongoose.model('Post', PostSchema);

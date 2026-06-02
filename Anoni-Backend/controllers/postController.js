@@ -3,19 +3,24 @@ const Post = require('../models/Post');
 // ─────────────────────────────────────────────
 // GET /api/posts
 // Feed with pagination (?page=1&limit=10)
+// Optional: ?owner=username to get a user's posts
 // ─────────────────────────────────────────────
 exports.getAllPosts = async (req, res) => {
   try {
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
-    const limit = Math.min(50, parseInt(req.query.limit) || 10); // cap at 50
+    const limit = Math.min(50, parseInt(req.query.limit) || 10);
     const skip  = (page - 1) * limit;
 
+    // if ?owner=username is passed, filter by that owner
+    const filter = req.query.owner ? { ownerId: req.query.owner } : {};
+
     const [posts, total] = await Promise.all([
-      Post.find()
+      Post.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit), // strip comments from feed; load them on detail view
-      Post.countDocuments(),
+        .limit(limit)
+        .select('-comments'),
+      Post.countDocuments(filter),
     ]);
 
     res.json({
@@ -43,13 +48,9 @@ exports.getPostById = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ error: 'Post not found' });
-
     res.json(post);
   } catch (err) {
-    // Mongoose throws CastError when :id isn't a valid ObjectId
-    if (err.name === 'CastError') {
-      return res.status(400).json({ error: 'Invalid post ID' });
-    }
+    if (err.name === 'CastError') return res.status(400).json({ error: 'Invalid post ID' });
     console.error('[getPostById]', err.message);
     res.status(500).json({ error: 'Failed to fetch post' });
   }
@@ -57,23 +58,32 @@ exports.getPostById = async (req, res) => {
 
 // ─────────────────────────────────────────────
 // POST /api/posts
-// Create a new post (protected — needs auth)
-// Yassir: authMiddleware attaches req.user
+// Create a new post
+// username = fake display name (can be anything)
+// ownerId  = real logged in user (for managing posts later)
 // ─────────────────────────────────────────────
 exports.createPost = async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, username } = req.body;
 
     if (!title?.trim() || !content?.trim()) {
       return res.status(400).json({ error: 'Title and content are required' });
     }
 
-    // req.user is set by Yassir's authMiddleware
-    // Falls back to 'anon' so the route still works during local dev
-    // without auth wired up yet
-    const username = req.user?.username || 'anon';
+    // display name: use what they typed, fall back to anon
+    const displayName = username?.trim() || 'anon';
 
-    const post = await Post.create({ title: title.trim(), content: content.trim(), username });
+    // owner: real logged in user from auth middleware
+    // Person C: req.user will be set by your middleware
+    // falls back to displayName for now (mock auth)
+    const ownerId = req.user?.username || displayName;
+
+    const post = await Post.create({
+      title: title.trim(),
+      content: content.trim(),
+      username: displayName,
+      ownerId,
+    });
 
     res.status(201).json(post);
   } catch (err) {
@@ -88,16 +98,15 @@ exports.createPost = async (req, res) => {
 
 // ─────────────────────────────────────────────
 // PUT /api/posts/:id
-// Edit a post (protected — must be author)
+// Edit a post — only the owner can do this
 // ─────────────────────────────────────────────
 exports.updatePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ error: 'Post not found' });
 
-    // Only the author can edit
     const requestingUser = req.user?.username;
-    if (post.username !== requestingUser) {
+    if (post.ownerId !== requestingUser) {
       return res.status(403).json({ error: 'Not authorised to edit this post' });
     }
 
@@ -117,7 +126,7 @@ exports.updatePost = async (req, res) => {
 
 // ─────────────────────────────────────────────
 // DELETE /api/posts/:id
-// Delete a post (protected — must be author)
+// Delete a post — only the owner can do this
 // ─────────────────────────────────────────────
 exports.deletePost = async (req, res) => {
   try {
@@ -125,7 +134,7 @@ exports.deletePost = async (req, res) => {
     if (!post) return res.status(404).json({ error: 'Post not found' });
 
     const requestingUser = req.user?.username;
-    if (post.username !== requestingUser) {
+    if (post.ownerId !== requestingUser) {
       return res.status(403).json({ error: 'Not authorised to delete this post' });
     }
 

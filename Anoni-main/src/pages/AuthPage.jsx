@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { loginUser, registerUser, getUserPosts } from "../api/authService.js";
 import { getPosts } from "../api/postService.js";
 import { useNavigate } from "react-router-dom";
+import MyPostsPanel from "../components/MyPostsPanel.jsx";
 
 export default function AuthPage() {
   const { currentUser, login, logout } = useAuth();
@@ -20,6 +21,7 @@ export default function AuthPage() {
     try {
       const user = await loginUser({ username, password });
       login(user);
+      <MyPostsPanel />
       const posts = await getUserPosts(user.username, getPosts);
       setUserPosts(posts);
     } catch (e) {
@@ -119,10 +121,11 @@ export default function AuthPage() {
                 <div
                   key={p.id}
                   className="my-post-link"
-                  onClick={() => navigate(`/post/${p.id}`)}
+                  onClick={() => navigate(`/post/${p._id}`)}
                 >
                   @{p.username} {p.title}...
                 </div>
+                
               ))}
             </div>
           )}
