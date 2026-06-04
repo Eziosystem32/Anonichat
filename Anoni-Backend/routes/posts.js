@@ -1,6 +1,8 @@
 const express = require('express');
 const router  = express.Router();
+
 const { requireAuth, optionalAuth } = require('../middleware/authMiddleware');
+
 const {
   getAllPosts,
   getPostById,
@@ -10,29 +12,24 @@ const {
 } = require('../controllers/postController');
 
 const { addComment, deleteComment, voteComment } = require('../controllers/commentController');
-
-const protect = (req, _res, next) => {
- // import Yassir's real middleware
-  next();
-};
+const { votePost, getPostVotes }                 = require('../controllers/voteController');
 
 // ─── Public routes ────────────────────────────────────────────────
-router.get('/',    getAllPosts);
-router.get('/:id', getPostById);
+router.get('/',          getAllPosts);
+router.get('/:id',       getPostById);
+router.get('/:id/votes', getPostVotes);
 
-// ─── Protected routes ─────────────────────────────────────────────
-router.post('/', optionalAuth, createPost); // optional auth
-router.put('/:id', requireAuth, updatePost); // still required
-router.delete('/:id', requireAuth, deletePost); // still required
+// ─── Post routes ──────────────────────────────────────────────────
+router.post(  '/',    optionalAuth, createPost);
+router.put(   '/:id', requireAuth,  updatePost);
+router.delete('/:id', requireAuth,  deletePost);
+
+// ─── Vote routes ──────────────────────────────────────────────────
+router.patch('/:id/vote', optionalAuth, votePost);
 
 // ─── Comment routes ───────────────────────────────────────────────
-router.post(  '/:postId/comments',                protect, addComment);
-router.delete('/:postId/comments/:commentId',     protect, deleteComment);
-router.put(   '/:postId/comments/:commentId/vote',         voteComment);
-
-// ─── Abraham: uncomment when vote routes are ready ───────────────
-// const voteRouter = require('./votes');
-// router.use('/:id/vote', voteRouter);
-// Also add: GET /:id/vote-status for frontend to check if user voted
+router.post(  '/:postId/comments',                 optionalAuth, addComment);
+router.delete('/:postId/comments/:commentId',      requireAuth,  deleteComment);
+router.put(   '/:postId/comments/:commentId/vote', optionalAuth, voteComment);
 
 module.exports = router;
