@@ -70,6 +70,11 @@ const PostSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    commentCount: {
+  type: Number,
+  default: 0,
+},
     // Abraham: uncomment and expand when implementing per-user vote tracking
     // upvotedBy:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     // downvotedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

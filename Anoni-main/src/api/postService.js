@@ -32,13 +32,16 @@ export const createPost = async (data) => {
 };
 
 export const votePost = async (postId, direction) => {
+  const token = getToken();
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const voteType = direction === 'up' ? 'upvote' : 'downvote';
+
   const res = await fetch(`${BASE_URL}/posts/${postId}/vote`, {
     method: 'PATCH',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getToken()}`
-    },
-    body: JSON.stringify({ direction }),
+    headers,
+    body: JSON.stringify({ voteType }),
   });
   if (!res.ok) throw new Error('Failed to vote');
   return res.json();

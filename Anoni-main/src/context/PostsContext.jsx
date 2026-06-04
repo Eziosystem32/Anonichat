@@ -19,11 +19,12 @@ export const PostsProvider = ({ children }) => {
   }, []);
 
   const handleVote = async (postId, direction) => {
-    const newVotes = await votePost(postId, direction);
-    setPosts((prev) =>
-      prev.map((p) => (p._id === postId ? { ...p, votes: newVotes } : p))
-    );
-  };
+  const result = await votePost(postId, direction);
+  setPosts((prev) =>
+    prev.map((p) => (p._id === postId ? { ...p, votes: result.votes } : p))
+  );
+  return result; // ← add this
+};
 
   const getSortedPosts = () => {
     const copy = [...posts];

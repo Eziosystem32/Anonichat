@@ -15,6 +15,7 @@ const addComment = async (req, res) => {
 
     const comment = { username: username?.trim() || 'anon', content: content.trim() };
     post.comments.push(comment);
+    post.commentCount = (post.commentCount || 0) + 1;
     await post.save();
 
     const savedComment = post.comments[post.comments.length - 1];
@@ -35,6 +36,7 @@ const deleteComment = async (req, res) => {
     if (!comment) return res.status(404).json({ error: 'Comment not found' });
 
     comment.deleteOne();
+    post.commentCount = Math.max(0, (post.commentCount || 0) - 1);
     await post.save();
     res.json({ message: 'Comment deleted' });
   } catch (err) {
