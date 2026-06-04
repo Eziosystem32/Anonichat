@@ -1,4 +1,6 @@
 const BASE_URL = 'http://localhost:5000/api';
+import { getToken } from './authService.js';
+
 
 export const getPosts = async () => {
   const res = await fetch(`${BASE_URL}/posts`);
@@ -13,10 +15,16 @@ export const getPostById = async (id) => {
   return res.json();
 };
 
+
+
 export const createPost = async (data) => {
+  const token = getToken();
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
   const res = await fetch(`${BASE_URL}/posts`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to create post');
@@ -26,7 +34,10 @@ export const createPost = async (data) => {
 export const votePost = async (postId, direction) => {
   const res = await fetch(`${BASE_URL}/posts/${postId}/vote`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getToken()}`
+    },
     body: JSON.stringify({ direction }),
   });
   if (!res.ok) throw new Error('Failed to vote');
@@ -42,7 +53,10 @@ export const votePost = async (postId, direction) => {
 export const addComment = async (postId, data) => {
   const res = await fetch(`${BASE_URL}/posts/${postId}/comments`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getToken()}`
+    },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to add comment');
@@ -52,7 +66,10 @@ export const addComment = async (postId, data) => {
 export const voteComment = async (postId, commentId, direction) => {
   const res = await fetch(`${BASE_URL}/posts/${postId}/comments/${commentId}/vote`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getToken()}`
+    },
     body: JSON.stringify({ direction }),
   });
   if (!res.ok) throw new Error('Failed to vote on comment');

@@ -93,3 +93,5 @@ PostSchema.index({ createdAt: -1 });
 PostSchema.index({ ownerId: 1 }); // for GET /api/posts?owner=username
 
 module.exports = mongoose.model('Post', PostSchema);
+
+

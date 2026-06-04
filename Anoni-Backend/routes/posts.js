@@ -1,6 +1,6 @@
 const express = require('express');
 const router  = express.Router();
-
+const { requireAuth, optionalAuth } = require('../middleware/authMiddleware');
 const {
   getAllPosts,
   getPostById,
@@ -9,31 +9,24 @@ const {
   deletePost,
 } = require('../controllers/postController');
 
-// ─── Yassir: drop your authMiddleware import here ──────────────
-// const { protect } = require('../middleware/authMiddleware');
-// Once it exists, swap the placeholder below for `protect`
-// ──────────────────────────────────────────────────────────────────
 
-// Temporary no-op so routes work locally before auth is wired up.
-// DELETE this block once Yassir's middleware is merged.
-const protect = (req, _res, next) => {
-  // TODO: remove this stub and import Yassir's real middleware
-  next();
-};
 
 // ─── Public routes ────────────────────────────────────────────────
-router.get('/',    getAllPosts);   // GET  /api/posts
-router.get('/:id', getPostById);  // GET  /api/posts/:id
+router.get('/',    getAllPosts);
+router.get('/:id', getPostById);
 
-// ─── Protected routes (require auth) ──────────────────────────────
-router.post(  '/',    protect, createPost);  // POST   /api/posts
-router.put(   '/:id', protect, updatePost);  // PUT    /api/posts/:id
-router.delete('/:id', protect, deletePost);  // DELETE /api/posts/:id
+// ─── Protected routes ─────────────────────────────────────────────
+router.post('/', optionalAuth, createPost); // optional auth
+router.put('/:id', requireAuth, updatePost); // still required
+router.delete('/:id', requireAuth, deletePost); // still required
 
-// ─── Eyos: mount your comment router here ─────────────────────
-// Example (once your file exists):
+// ─── Eyos: uncomment when comment routes are ready ────────────
 // const commentRouter = require('./comments');
 // router.use('/:postId/comments', commentRouter);
-// ──────────────────────────────────────────────────────────────────
+
+// ─── Abraham: uncomment when vote routes are ready ───────────────
+// const voteRouter = require('./votes');
+// router.use('/:id/vote', voteRouter);
+// Also add: GET /:id/vote-status for frontend to check if user voted
 
 module.exports = router;

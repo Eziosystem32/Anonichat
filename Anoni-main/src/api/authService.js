@@ -1,40 +1,56 @@
-import { mockUsers } from "./mockData.js";
-
-let users = [...mockUsers];
-let nextUserId = users.length + 1;
-
-const delay = (ms = 300) => new Promise((res) => setTimeout(res, ms));
+const BASE_URL = 'http://localhost:5000/api';
 
 export const loginUser = async (credentials) => {
-  await delay();
-  const user = users.find(
-    (u) =>
-      u.username === credentials.username &&
-      u.password === credentials.password
-  );
-  if (!user) throw new Error("Invalid username or password");
-  const { password, ...safeUser } = user;
-  return safeUser;
+  const res = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: credentials.email || credentials.username, // support both
+      password: credentials.password,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Login failed');
+
+  // save token for future requests
+  localStorage.setItem('token', data.token);
+  return data.user;
 };
 
-export const registerUser = async (data) => {
-  await delay();
-  const exists = users.find((u) => u.username === data.username);
-  if (exists) throw new Error("Username already taken");
-  const newUser = {
-    id: nextUserId++,
-    username: data.username,
-    password: data.password,
-    postsCreated: 0,
-    commentsLeft: 0,
-  };
-  users = [...users, newUser];
-  const { password, ...safeUser } = newUser;
-  return safeUser;
+export const registerUser = async (credentials) => {
+  const res = await fetch(`${BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: credentials.username,
+      email: credentials.email,
+      password: credentials.password,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Registration failed');
+
+  localStorage.setItem('token', data.token);
+  return data.user;
 };
 
-export const getUserPosts = async (username, getPosts) => {
-  await delay(100);
-  const allPosts = await getPosts();
-  return allPosts.filter((p) => p.username === username);
+export const logoutUser = () => {
+  localStorage.removeItem('token');
+};
+
+export const getToken = () => localStorage.getItem('token');
+
+export const getCurrentUser = async () => {
+  const token = getToken();
+  if (!token) return null;
+
+  const res = await fetch(`${BASE_URL}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    localStorage.removeItem('token'); // token expired or invalid
+    return null;
+  }
+  const data = await res.json();
+  return data.user;
 };
