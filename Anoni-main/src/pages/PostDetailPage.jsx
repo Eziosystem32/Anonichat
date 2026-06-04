@@ -18,6 +18,7 @@ export default function PostDetailPage() {
   const [commentUser, setCommentUser] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [commentsOpen, setCommentsOpen] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -32,21 +33,30 @@ export default function PostDetailPage() {
     if (!commentText.trim()) return;
     setSending(true);
     try {
-      const newComment = await addComment(id, {
-        username,
-        content: commentText.trim(),
-      });
+      const newComment = await addComment(id, { username, content: commentText.trim() });
       setPost((prev) => ({ ...prev, comments: [...prev.comments, newComment] }));
       setCommentText("");
+      setCommentsOpen(true);
     } finally {
       setSending(false);
     }
   };
 
+  const handleCommentDelete = (deletedId) => {
+    setPost((prev) => ({
+      ...prev,
+      comments: prev.comments.filter((c) => c._id !== deletedId),
+    }));
+  };
+
   const handlePostVote = async (dir) => {
     if (!post) return;
-    const newVotes = await handleVote(post._id, dir);
+    await handleVote(post._id, dir);
     setPost((prev) => ({ ...prev, votes: prev.votes + (dir === "up" ? 1 : -1) }));
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
   };
 
   if (loading) return <div className="page-layout"><div className="loading">Loading thread...</div></div>;
@@ -55,11 +65,13 @@ export default function PostDetailPage() {
   return (
     <div className="page-layout detail-layout">
       <div className="detail-container">
+
+        {/* ── Post card ── */}
         <div className="detail-box">
           <div className="post-card-header">
             <span className="post-author">@{post.username}:</span>
             <span className="post-title"> <em>{post.title}</em></span>
-            <span className="post-time">{formatTimestamp(post.timestamp)}</span>
+            <span className="post-time">{formatTimestamp(post.timestamp ?? post.createdAt)}</span>
             <span className="post-butterfly">🦋</span>
           </div>
           <div className="detail-content">{post.content}</div>
@@ -68,19 +80,43 @@ export default function PostDetailPage() {
             <span className="vote-count"> {post.votes} </span>
             <button className="vote-btn down" onClick={() => handlePostVote("down")}>▼</button>
             <span className="footer-sep"> | </span>
-            <button className="action-btn">🔗 copy link</button>
+            <button className="action-btn" onClick={handleCopyLink}>🔗 copy link</button>
             <span className="footer-sep"> | </span>
             <button className="action-btn">Save</button>
           </div>
         </div>
 
+        {/* ── Comments section ── */}
         <div className="comments-section">
-          <h3 className="comments-heading">COMMENTS ({post.comments.length})</h3>
-          {post.comments.map((c) => (
-            <CommentItem key={c.id} comment={c} postId={post._id} />
-          ))}
+          <button
+            className="comments-toggle"
+            onClick={() => setCommentsOpen((o) => !o)}
+          >
+            <span className="comments-heading">
+              COMMENTS ({post.comments.length})
+            </span>
+            <span className="toggle-arrow">{commentsOpen ? "▾" : "▸"}</span>
+          </button>
+
+          {commentsOpen && (
+            <div className="comments-list">
+              {post.comments.length === 0 ? (
+                <div className="no-comments">No comments yet. Be the first!</div>
+              ) : (
+                post.comments.map((c) => (
+                  <CommentItem
+                    key={c._id}
+                    comment={c}
+                    postId={post._id}
+                    onDelete={handleCommentDelete}
+                  />
+                ))
+              )}
+            </div>
+          )}
         </div>
 
+        {/* ── Add comment ── */}
         <div className="comment-input-row">
           {!currentUser && (
             <input
@@ -98,14 +134,11 @@ export default function PostDetailPage() {
             onChange={(e) => setCommentText(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendComment()}
           />
-          <button
-            className="send-btn"
-            onClick={handleSendComment}
-            disabled={sending}
-          >
-            SEND
+          <button className="send-btn" onClick={handleSendComment} disabled={sending}>
+            {sending ? "..." : "SEND"}
           </button>
         </div>
+
       </div>
     </div>
   );

@@ -50,27 +50,31 @@ export const votePost = async (postId, direction) => {
 
 //temp
 
-export const addComment = async (postId, data) => {
+// ─── Comments ─────────────────────────────────────────────────────
+
+export const addComment = async (postId, { username, content }) => {
   const res = await fetch(`${BASE_URL}/posts/${postId}/comments`, {
     method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getToken()}`
-    },
-    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, content }),
   });
   if (!res.ok) throw new Error('Failed to add comment');
   return res.json();
 };
 
-export const voteComment = async (postId, commentId, direction) => {
+export const deleteComment = async (postId, commentId) => {
+  const res = await fetch(`${BASE_URL}/posts/${postId}/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete comment');
+  return res.json();
+};
+
+export const voteComment = async (postId, commentId, dir) => {
   const res = await fetch(`${BASE_URL}/posts/${postId}/comments/${commentId}/vote`, {
-    method: 'PATCH',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getToken()}`
-    },
-    body: JSON.stringify({ direction }),
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dir }),
   });
   if (!res.ok) throw new Error('Failed to vote on comment');
   return res.json();

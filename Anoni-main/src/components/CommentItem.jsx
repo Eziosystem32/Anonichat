@@ -1,34 +1,56 @@
-import { formatTimestamp } from "../utils/formatTime.js";
-import { voteComment } from "../api/postService.js";
 import { useState } from "react";
+import { deleteComment, voteComment } from "../api/postService.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import { formatTimestamp } from "../utils/formatTime.js";
 
-export default function CommentItem({ comment, postId, onVoteUpdate }) {
-  const [votes, setVotes] = useState(comment.votes);
+export default function CommentItem({ comment, postId, onDelete }) {
+  const { currentUser } = useAuth();
+  const [votes, setVotes] = useState(comment.votes ?? 0);
+  const [deleted, setDeleted] = useState(false);
+  const [voting, setVoting] = useState(false);
+
+  if (deleted) return null;
 
   const handleVote = async (dir) => {
-    const newVotes = await voteComment(postId, comment.id, dir);
-    setVotes(newVotes);
-    if (onVoteUpdate) onVoteUpdate(comment.id, newVotes);
+    if (voting) return;
+    setVoting(true);
+    try {
+      const data = await voteComment(postId, comment._id, dir);
+      setVotes(data.votes);
+    } finally {
+      setVoting(false);
+    }
   };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Delete this comment?")) return;
+    try {
+      await deleteComment(postId, comment._id);
+      setDeleted(true);
+      onDelete?.(comment._id);
+    } catch {
+      alert("Could not delete comment.");
+    }
+  };
+
+  const isOwner = currentUser?.username === comment.username;
 
   return (
     <div className="comment-item">
       <div className="comment-header">
-        <span className="comment-author">@{comment.username}:</span>
-        <span className="comment-time">{formatTimestamp(comment.timestamp)}</span>
-        <span className="post-butterfly">🦋</span>
+        <span className="comment-author">@{comment.username}</span>
+        <span className="comment-time">{formatTimestamp(comment.createdAt)}</span>
+        {isOwner && (
+          <button className="comment-delete-btn" onClick={handleDelete} title="Delete comment">
+            ✕
+          </button>
+        )}
       </div>
       <div className="comment-body">{comment.content}</div>
       <div className="comment-footer">
-        <button className="vote-btn up" onClick={() => handleVote("up")}>▲</button>
-        <span className="vote-count"> {votes} </span>
-        <button className="vote-btn down" onClick={() => handleVote("down")}>▼</button>
-        <span className="footer-sep"> | </span>
-        <button className="action-btn">🔗 copy link</button>
-        <span className="footer-sep"> | </span>
-        <button className="action-btn">↩ Reply</button>
-        <span className="footer-sep"> | </span>
-        <button className="action-btn">Save</button>
+        <button className="vote-btn up" onClick={() => handleVote("up")} disabled={voting}>▲</button>
+        <span className="vote-count">{votes}</span>
+        <button className="vote-btn down" onClick={() => handleVote("down")} disabled={voting}>▼</button>
       </div>
     </div>
   );
